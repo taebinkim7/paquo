@@ -1,27 +1,17 @@
 from distutils.version import LooseVersion
-from functools import partial
-from typing import List
-from typing import Type
-from typing import TypeVar
 
 import pytest
 import shapely.geometry
 from shapely.geometry import Polygon
 
-import paquo
-from paquo.classes import QuPathPathClass
-from paquo.hierarchy import QuPathPathObjectHierarchy
-from paquo.images import QuPathImageType
-from paquo.pathobjects import QuPathPathAnnotationObject, _PathROIObject, QuPathPathDetectionObject
-from paquo.projects import QuPathProject
-
 
 @pytest.fixture(scope="function")
 def empty_hierarchy():
+    from paquo.hierarchy import QuPathPathObjectHierarchy
     yield QuPathPathObjectHierarchy()
 
 
-def test_initial_state(empty_hierarchy: QuPathPathObjectHierarchy):
+def test_initial_state(empty_hierarchy):
     h = empty_hierarchy
     repr(h)
     assert h.is_empty
@@ -29,11 +19,16 @@ def test_initial_state(empty_hierarchy: QuPathPathObjectHierarchy):
     assert len(h) == 0
 
 
-_T = TypeVar('_T', bound=_PathROIObject)
-
-
-def _make_polygons(obj_cls: Type[_T], amount: int) -> List[_T]:
+def _make_path_objects(po_type, amount):
     """returns a list of amount Path Objects"""
+    from paquo.pathobjects import QuPathPathAnnotationObject
+    from paquo.pathobjects import QuPathPathDetectionObject
+    if po_type == "annotations":
+        obj_cls = QuPathPathAnnotationObject
+    elif po_type == "detections":
+        obj_cls = QuPathPathDetectionObject
+    else:
+        raise ValueError(f"unknown po_type {po_type!r}")
     path_objects = []
     for x in range(0, 10 * amount, 10):
         roi = shapely.geometry.Polygon.from_bounds(x, 0, x+5, 5)
@@ -42,16 +37,24 @@ def _make_polygons(obj_cls: Type[_T], amount: int) -> List[_T]:
     return path_objects
 
 
-_make_polygon_annotations = partial(_make_polygons, QuPathPathAnnotationObject)
-_make_polygon_detections = partial(_make_polygons, QuPathPathDetectionObject)
+@pytest.fixture(scope="function")
+def annotations(request):
+    num = request.param
+    yield _make_path_objects('annotations', num)
 
 
-def test_attach_annotations(empty_hierarchy):
+@pytest.fixture(scope="function")
+def detections(request):
+    num = request.param
+    yield _make_path_objects('detections', num)
+
+
+@pytest.mark.parametrize("annotations", [10], indirect=True)
+def test_attach_annotations(empty_hierarchy, annotations):
+    annotations: list
     h = empty_hierarchy
     # repr empty
     repr(h.annotations)
-
-    annotations = _make_polygon_annotations(10)
 
     # add many
     h.annotations.update(annotations)
@@ -80,9 +83,10 @@ def test_add_annotation_detection_tile(empty_hierarchy):
     )
 
 
-def test_attach_detections(empty_hierarchy):
+@pytest.mark.parametrize("detections", [10], indirect=True)
+def test_attach_detections(empty_hierarchy, detections):
+    detections: list
     h = empty_hierarchy
-    detections = _make_polygon_detections(10)
 
     # add many
     h.detections.update(detections)
@@ -96,19 +100,22 @@ def test_attach_detections(empty_hierarchy):
     assert len(h) == len(detections) - 1
 
 
-def test_annotations_detections_separation(empty_hierarchy):
+@pytest.mark.parametrize("annotations", [5], indirect=True)
+@pytest.mark.parametrize("detections", [7], indirect=True)
+def test_annotations_detections_separation(
+    empty_hierarchy, detections, annotations
+):
     h = empty_hierarchy
-    annotations = _make_polygon_annotations(5)
-    detections = _make_polygon_detections(7)
     h.annotations.update(annotations)
     h.detections.update(detections)
     assert len(h.annotations) == 5
     assert len(h.detections) == 7
 
 
-def test_geojson_roundtrip_via_geojson(empty_hierarchy):
+@pytest.mark.parametrize("annotations", [10], indirect=True)
+def test_geojson_roundtrip_via_geojson(empty_hierarchy, annotations):
+    annotations: list
     h = empty_hierarchy
-    annotations = _make_polygon_annotations(10)
 
     h.annotations.update(annotations)
     assert len(h) == len(annotations)
@@ -197,11 +204,13 @@ def test_geojson_roundtrip_via_annotations(empty_hierarchy, example_annotation, 
 
 @pytest.fixture(scope='function')
 def new_project(tmp_path):
+    from paquo.projects import QuPathProject
     yield QuPathProject(tmp_path / "paquo-project", mode='x')
 
 
 @pytest.fixture(scope='function')
 def project_with_classes(new_project):
+    from paquo.classes import QuPathPathClass
     new_project.path_classes = [
         QuPathPathClass("class0", color="#ff0000"),
         QuPathPathClass("class1", color="#00ff00"),
@@ -216,8 +225,10 @@ def project_with_classes(new_project):
 
 NUM_ANNOTATIONS = 4
 
+
 @pytest.fixture(scope='function')
 def project_with_annotations(project_with_classes, svs_small):
+    from paquo.images import QuPathImageType
     pth_cls, *_ = project_with_classes.path_classes
 
     num_annotations = NUM_ANNOTATIONS

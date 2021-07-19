@@ -3,9 +3,6 @@ from distutils.version import LooseVersion
 import pytest
 import shapely.geometry
 
-from paquo.classes import QuPathPathClass
-from paquo.pathobjects import QuPathPathAnnotationObject
-
 
 def test_qupath_to_shapely_conversion():
     from paquo.java import ROIs
@@ -49,6 +46,8 @@ def test_shapely_to_qupath_conversion():
 )
 def path_annotation(request):
     """parameterized fixture for different Annotation Objects"""
+    from paquo.classes import QuPathPathClass
+    from paquo.pathobjects import QuPathPathAnnotationObject
     roi = request.param
     path_class = QuPathPathClass("myclass")
 
@@ -94,6 +93,9 @@ def test_geojson_serialization(path_annotation, qupath_version):
 
 
 def test_annotation_object():
+    from paquo.classes import QuPathPathClass
+    from paquo.pathobjects import QuPathPathAnnotationObject
+
     with pytest.raises(TypeError):
         # noinspection PyTypeChecker
         QuPathPathAnnotationObject.from_shapely(roi=123)
@@ -143,6 +145,9 @@ def test_annotation_object():
 
 
 def test_measurements():
+    from paquo.classes import QuPathPathClass
+    from paquo.pathobjects import QuPathPathAnnotationObject
+
     ao = QuPathPathAnnotationObject.from_shapely(
         shapely.geometry.Point(1, 1),
         path_class=QuPathPathClass('myclass'),

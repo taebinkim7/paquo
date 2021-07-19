@@ -6,13 +6,10 @@ from pathlib import Path
 import pytest
 import shapely.geometry
 
-from paquo.images import ImageProvider
-from paquo.projects import QuPathProject
-from paquo._utils import cached_property
-
 
 @pytest.fixture(scope='module')
 def project_and_changes(svs_small):
+    from paquo.projects import QuPathProject
     with tempfile.TemporaryDirectory(prefix='paquo-') as tmpdir:
         qp = QuPathProject(tmpdir, mode='x')
         entry = qp.add_image(svs_small)
@@ -41,6 +38,7 @@ def copy_svs_small(svs_small):
 
 @pytest.fixture(scope="function")
 def readonly_project(project_and_changes):
+    from paquo.projects import QuPathProject
     project_path, changes = project_and_changes
     qp = QuPathProject(project_path, mode="r")
     qp.__changes = changes
@@ -48,6 +46,7 @@ def readonly_project(project_and_changes):
 
 
 def iter_readonly_properties(obj):
+    from paquo._utils import cached_property
     cls = obj.__class__
     for prop in dir(cls):
         cls_prop = getattr(cls, prop)
@@ -93,6 +92,7 @@ class _Accessor:
 
 
 def test_project_attrs_and_methods(readonly_project, copy_svs_small):
+    from paquo.images import ImageProvider
     with assert_no_modification(readonly_project) as qp:
         a = _Accessor(qp)
 
@@ -102,8 +102,6 @@ def test_project_attrs_and_methods(readonly_project, copy_svs_small):
         for ro_prop in iter_readonly_properties(qp):
             with pytest.raises(AttributeError):
                 a.setattr(ro_prop, "abc")
-        #with pytest.raises(AttributeError):
-        #    a.setattr("images", [])
 
         # these dont do anything
         a.callmethod("is_readable")

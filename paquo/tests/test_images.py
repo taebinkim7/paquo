@@ -2,19 +2,17 @@ import platform
 import shutil
 import tempfile
 from operator import itemgetter
-from pathlib import Path, PureWindowsPath, PurePosixPath
+from pathlib import Path
+from pathlib import PurePosixPath
+from pathlib import PureWindowsPath
 from typing import Dict
 
 import pytest
 
-from paquo._utils import nullcontext
-from paquo.hierarchy import QuPathPathObjectHierarchy
-from paquo.images import QuPathImageType, ImageProvider
-from paquo.projects import QuPathProject
-
 
 @pytest.fixture(scope='module')
 def image_entry(svs_small):
+    from paquo.projects import QuPathProject
     with tempfile.TemporaryDirectory(prefix='paquo-') as tmpdir:
         qp = QuPathProject(tmpdir, mode='x')
         entry = qp.add_image(svs_small)
@@ -31,6 +29,8 @@ def removable_svs_small(svs_small):
 
 @pytest.fixture(scope='function')
 def project_with_removed_image(removable_svs_small):
+    from paquo.images import QuPathImageType
+    from paquo.projects import QuPathProject
     with tempfile.TemporaryDirectory(prefix='paquo-') as tmpdir:
         qp = QuPathProject(tmpdir, mode='x')
         _ = qp.add_image(removable_svs_small, image_type=QuPathImageType.BRIGHTFIELD_H_E)
@@ -41,6 +41,7 @@ def project_with_removed_image(removable_svs_small):
 
 @pytest.fixture(scope='function')
 def project_with_removed_image_without_image_data(removable_svs_small):
+    from paquo.projects import QuPathProject
     with tempfile.TemporaryDirectory(prefix='paquo-') as tmpdir:
         qp = QuPathProject(tmpdir, mode='x')
         _ = qp.add_image(removable_svs_small)
@@ -50,6 +51,7 @@ def project_with_removed_image_without_image_data(removable_svs_small):
 
 
 def test_image_entry_return_hierarchy(image_entry):
+    from paquo.hierarchy import QuPathPathObjectHierarchy
     assert isinstance(image_entry.hierarchy, QuPathPathObjectHierarchy)
 
 
@@ -132,12 +134,14 @@ def test_metadata_non_str_items(image_entry):
 
 
 def test_imagedata_saving_for_removed_images(project_with_removed_image):
+    from paquo.projects import QuPathProject
     with QuPathProject(project_with_removed_image, mode='r+') as qp:
         entry = qp.images[0]
         assert (entry.entry_path / "data.qpdata").is_file()
 
 
 def test_imagedata_saving_for_removed_images_without_type(project_with_removed_image_without_image_data):
+    from paquo.projects import QuPathProject
     with QuPathProject(project_with_removed_image_without_image_data, mode='r+') as qp:
         entry = qp.images[0]
         # todo: check if we actually want this behavior.
@@ -146,12 +150,14 @@ def test_imagedata_saving_for_removed_images_without_type(project_with_removed_i
 
 
 def test_readonly_recovery_hierarchy(project_with_removed_image_without_image_data):
+    from paquo.projects import QuPathProject
     with QuPathProject(project_with_removed_image_without_image_data, mode='r+') as qp:
         entry = qp.images[0]
         assert repr(entry.hierarchy)
 
 
 def test_readonly_recovery_image_server(project_with_removed_image):
+    from paquo.projects import QuPathProject
     with QuPathProject(project_with_removed_image, mode='r') as qp:
         image_entry = qp.images[0]
 
@@ -201,6 +207,7 @@ def test_description(image_entry):
 
 
 def test_image_type(image_entry):
+    from paquo.images import QuPathImageType
     # initially unset
     assert image_entry.image_type == QuPathImageType.UNSET
 
@@ -280,6 +287,9 @@ TEST_URIS: Dict[str, Dict] = {
     ids=list(TEST_URIS.keys())
 )
 def test_image_provider_raise_if_invalid_uri(uri, exc):
+    from paquo.images import ImageProvider
+    from paquo._utils import nullcontext
+
     cm = pytest.raises(exc) if exc else nullcontext()
     with cm:
         ImageProvider.path_from_uri(uri)
@@ -290,6 +300,7 @@ def test_image_provider_raise_if_invalid_uri(uri, exc):
     ids=[k for k, x in TEST_URIS.items() if x["exception"] is None]
 )
 def test_image_provider_uri_from_path(uri, path):
+    from paquo.images import ImageProvider
     # noinspection PyTypeChecker
     new_uri = ImageProvider.uri_from_path(path)
     assert uri == new_uri
@@ -302,6 +313,7 @@ def test_image_provider_uri_from_path(uri, path):
     ids=[k for k, x in TEST_URIS.items() if x["exception"] is None]
 )
 def test_image_provider_path_from_uri(uri: str, path: Path):
+    from paquo.images import ImageProvider
     c_path = ImageProvider.path_from_uri(uri)
     assert c_path.is_absolute()
     assert type(c_path) is type(path)
@@ -309,6 +321,8 @@ def test_image_provider_path_from_uri(uri: str, path: Path):
 
 
 def test_image_provider_ducktyping():
+    from paquo.images import ImageProvider
+
     class IPBad:
         def id(self, x):
             pass  # pragma: no cover
@@ -325,6 +339,8 @@ def test_image_provider_ducktyping():
 
 
 def test_image_provider_default_implementation():
+    from paquo.images import ImageProvider
+
     class NoneProvider(ImageProvider):
         def id(self, x):
             return super().id(x)
@@ -340,6 +356,7 @@ def test_image_provider_default_implementation():
 
 
 def test_image_provider_uri_from_relpath_and_abspath():
+    from paquo.images import ImageProvider
     with pytest.raises(ValueError):
         ImageProvider.uri_from_path(Path('./abc.svs'))
 

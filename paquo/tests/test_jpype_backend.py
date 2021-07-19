@@ -2,27 +2,32 @@ from pathlib import Path
 
 import pytest
 
-from paquo._utils import nullcontext
-# noinspection PyProtectedMember
-from paquo.jpype_backend import start_jvm, find_qupath, qupath_jvm_info_from_qupath_dir, _conda_qupath_dir
-
 
 def test_start_jvm_run_twice():
+    from paquo.jpype_backend import start_jvm
     assert start_jvm() == start_jvm()
 
 
 def test_non_standard_qupath_installation(tmp_path):
+    # noinspection PyProtectedMember
+    from paquo.jpype_backend import qupath_jvm_info_from_qupath_dir
     qupath_dir = Path(tmp_path)
     with pytest.raises(FileNotFoundError):
         qupath_jvm_info_from_qupath_dir(qupath_dir, [])
 
 
 def test_conda_qupath_dir(monkeypatch, tmp_path):
+    # noinspection PyProtectedMember
+    from paquo.jpype_backend import _conda_qupath_dir
     monkeypatch.delenv("CONDA_PREFIX", raising=False)
     assert _conda_qupath_dir() is None
 
 
 def test_find_qupath(tmp_path):
+    from paquo._utils import nullcontext
+    from paquo.jpype_backend import find_qupath
+    # noinspection PyProtectedMember
+    from paquo.jpype_backend import _conda_qupath_dir
     # prepare dirs
     opt = Path(tmp_path).absolute() / "opt"
     opt.mkdir()
@@ -58,6 +63,7 @@ def test_find_qupath(tmp_path):
 
 
 def test_find_qupath_java_opts_as_string():
+    from paquo.jpype_backend import find_qupath
     with pytest.raises(ValueError):
         # search only one
         find_qupath(

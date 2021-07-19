@@ -6,13 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from paquo._utils import nullcontext
-from paquo.images import ImageProvider, QuPathProjectImageEntry, QuPathImageType
-from paquo.projects import QuPathProject
-
 
 @pytest.fixture(scope='function')
 def new_project(tmp_path):
+    from paquo.projects import QuPathProject
     yield QuPathProject(tmp_path / "paquo-project", mode='x')
 
 
@@ -22,6 +19,7 @@ def tmp_path2(tmp_path):
 
 
 def test_project_instance():
+    from paquo.projects import QuPathProject
     with tempfile.TemporaryDirectory(prefix='paquo-') as tmpdir:
         q = QuPathProject(tmpdir, mode='x')
         repr(q)
@@ -29,6 +27,7 @@ def test_project_instance():
 
 
 def test_project_create_no_dir():
+    from paquo.projects import QuPathProject
     with tempfile.TemporaryDirectory(prefix='paquo-') as tmpdir:
         project_path = Path(tmpdir) / "new_project"
         q = QuPathProject(project_path, mode='x')
@@ -36,6 +35,7 @@ def test_project_create_no_dir():
 
 
 def test_project_creation_input_error(tmp_path):
+    from paquo.projects import QuPathProject
 
     p = tmp_path / Path('somewhere')
     p.mkdir()
@@ -63,6 +63,8 @@ def test_project_creation_input_error(tmp_path):
     ]
 )
 def test_project_creation_mode(mode, tmp_path2, new_project):
+    from paquo._utils import nullcontext
+    from paquo.projects import QuPathProject
     # test creating in empty dir
     cm = pytest.raises(FileNotFoundError) if "r" in mode else nullcontext()
     with cm:
@@ -106,11 +108,13 @@ def test_backup_path_project_stash(tmp_path):
 
 # noinspection PyTypeChecker
 def test_unsupported_mode(tmp_path):
+    from paquo.projects import QuPathProject
     with pytest.raises(ValueError):
         QuPathProject(tmp_path, mode="???")
 
 
 def test_project_open_with_filename(new_project):
+    from paquo.projects import QuPathProject
     new_project.save()
     # this points to path/project.qpproj
     proj_fn = new_project.path
@@ -118,6 +122,7 @@ def test_project_open_with_filename(new_project):
 
 
 def test_project_name(tmp_path):
+    from paquo.projects import QuPathProject
     p = Path(tmp_path) / "my_project_123"
     p.mkdir()
     qp = QuPathProject(p, mode='x')
@@ -139,6 +144,7 @@ def test_project_save_and_path(new_project):
 
 def test_project_version(new_project):
     from paquo.java import GeneralTools
+    from paquo.projects import QuPathProject
     new_project.save()
     qp_version = str(GeneralTools.getVersion())
     assert new_project.version == qp_version
@@ -167,6 +173,7 @@ def test_timestamps(new_project):
 
 
 def test_project_add_image(new_project, svs_small):
+    from paquo.images import QuPathProjectImageEntry
     with pytest.raises(ValueError):
         # can't add images by instantiating them
         QuPathProjectImageEntry(svs_small)
@@ -180,6 +187,7 @@ def test_project_add_image(new_project, svs_small):
 
 
 def test_project_add_image_writes_project(tmp_path, svs_small):
+    from paquo.projects import QuPathProject
     qp = QuPathProject(tmp_path, mode='x')
     qp.add_image(svs_small)
 
@@ -197,6 +205,7 @@ def test_project_add_image_twice(new_project, svs_small):
 
 
 def test_project_add_image_with_type(new_project, svs_small):
+    from paquo.images import QuPathImageType
     t = QuPathImageType.BRIGHTFIELD_H_DAB
     entry = new_project.add_image(svs_small, image_type=t)
     assert entry.image_type == t
@@ -244,6 +253,7 @@ def test_project_save_image_data(new_project, svs_small):
 
 
 def test_project_delete_image_file_when_opened(new_project, svs_small):
+    from paquo._utils import nullcontext
     # prepare new image to be deleted
     new_svs_small = new_project.path.parent / f"image_be_gone{svs_small.suffix}"
     shutil.copy(svs_small, new_svs_small)
@@ -281,6 +291,8 @@ def test_project_delete_image_file_when_opened(new_project, svs_small):
 
 @pytest.mark.xfail(platform.system() == "Windows", reason="file handles don't get closed by qupath?")
 def test_project_image_uri_update(tmp_path, svs_small):
+    from paquo.images import ImageProvider
+    from paquo.projects import QuPathProject
 
     project_path = tmp_path / "paquo-project"
     new_svs_small = tmp_path / "images" / f"image_be_gone{svs_small.suffix}"
@@ -325,6 +337,7 @@ def test_project_image_uri_update(tmp_path, svs_small):
 
 
 def test_project_image_uri_update_try_relative(tmp_path, svs_small):
+    from paquo.projects import QuPathProject
 
     # prepare initial location
     location_0 = tmp_path / "location_0"

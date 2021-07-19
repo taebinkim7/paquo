@@ -1,9 +1,8 @@
 import pytest
 
-from paquo.colors import QuPathColor
-
 
 def test_incorrect_color():
+    from paquo.colors import QuPathColor
     # NOTE THIS DOESNT CRASH BY DESIGN CURRENTLY!
     c = QuPathColor(300, 300, 300)
     assert not c.is_valid()
@@ -12,6 +11,7 @@ def test_incorrect_color():
 
 
 def test_color_roundtrip():
+    from paquo.colors import QuPathColor
     c0 = (64, 64, 64)
     j0 = QuPathColor(*c0).to_java_rgb()
     c1 = QuPathColor.from_java_rgb(j0).to_rgb()
@@ -19,26 +19,31 @@ def test_color_roundtrip():
 
 
 def test_color_mpl_rgba():
+    from paquo.colors import QuPathColor
     assert QuPathColor(255, 255, 255).to_mpl_rgba() == (1, 1, 1, 1)
 
 
 def test_repr():
+    from paquo.colors import QuPathColor
     repr(QuPathColor(0, 0, 0, 255))
     repr(QuPathColor(0, 0, 0, 0))
 
 
 def test_color_from_color():
+    from paquo.colors import QuPathColor
     c = QuPathColor(0, 0, 0, 0)
     assert QuPathColor.from_any(c) == c
 
 
 def test_from_any_error():
+    from paquo.colors import QuPathColor
     with pytest.raises(TypeError):
         # noinspection PyTypeChecker
         QuPathColor.from_any(object())
 
 
 def test_alpha_roundtrip():
+    from paquo.colors import QuPathColor
     c0 = QuPathColor(1, 2, 3, 255)
     j0 = c0.to_java_rgba()
     c1 = QuPathColor.from_java_rgba(j0)
@@ -48,6 +53,7 @@ def test_alpha_roundtrip():
 
 
 def test_rgba_via_java_rgb():
+    from paquo.colors import QuPathColor
     c0 = QuPathColor(1, 2, 3, 4)  # alpha will be lost
     j0 = c0.to_java_rgb()
     c1 = QuPathColor.from_java_rgba(j0)
@@ -59,6 +65,7 @@ def test_rgba_via_java_rgb():
 
 
 def test_rgb_via_java_rgba():
+    from paquo.colors import QuPathColor
     c0 = QuPathColor(1, 2, 3, 4)
     j0 = c0.to_java_rgba()
     c1 = QuPathColor.from_java_rgb(j0)
@@ -70,6 +77,7 @@ def test_rgb_via_java_rgba():
 
 
 def test_from_java_typecheck():
+    from paquo.colors import QuPathColor
     QuPathColor.from_java_rgb(0)
     QuPathColor.from_java_rgba(0)
     with pytest.raises(TypeError):
@@ -79,6 +87,7 @@ def test_from_java_typecheck():
 
 
 def test_hexcolor():
+    from paquo.colors import QuPathColor
     c0 = "#ff00ff"
     qc = QuPathColor.from_hex(c0)
     assert qc.to_rgb() == (255, 0, 255)

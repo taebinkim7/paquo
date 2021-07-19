@@ -1,14 +1,15 @@
 import pytest
 
-from paquo.classes import QuPathPathClass
-
 
 @pytest.fixture(scope='session')
 def pathclass():
+    from paquo.classes import QuPathPathClass
     yield QuPathPathClass("MyClass")
 
 
 def test_pathclass_creation():
+    from paquo.classes import QuPathPathClass
+
     with pytest.raises(TypeError):
         QuPathPathClass.from_java("abc")
 
@@ -20,6 +21,7 @@ def test_pathclass_creation():
 
 
 def test_deny_name_none_creation():
+    from paquo.classes import QuPathPathClass
     with pytest.raises(NotImplementedError):
         # noinspection PyTypeChecker
         QuPathPathClass(None, parent=None)
@@ -31,12 +33,14 @@ def test_deny_name_none_creation():
 
 
 def test_incorrect_parent_type():
+    from paquo.classes import QuPathPathClass
     with pytest.raises(TypeError):
         # noinspection PyTypeChecker
         QuPathPathClass("new class", parent="parent_class")
 
 
 def test_incorrect_class_name():
+    from paquo.classes import QuPathPathClass
     with pytest.raises(TypeError):
         # noinspection PyTypeChecker
         QuPathPathClass(1)
@@ -45,6 +49,7 @@ def test_incorrect_class_name():
 
 
 def test_pathclass_equality(pathclass):
+    from paquo.classes import QuPathPathClass
     other = QuPathPathClass("MyClass2")
     same = QuPathPathClass("MyClass")
     assert pathclass == pathclass
@@ -54,6 +59,7 @@ def test_pathclass_equality(pathclass):
 
 
 def test_pathclass_creation_with_parent(pathclass):
+    from paquo.classes import QuPathPathClass
     pc = QuPathPathClass("MyChild", parent=pathclass)
     assert pc.parent == pathclass
     assert pc.name == "MyChild"
@@ -69,6 +75,7 @@ def test_pathclass_creation_with_parent(pathclass):
 
 
 def test_pathclass_colors():
+    from paquo.classes import QuPathPathClass
     pc = QuPathPathClass("MyNew", color=None)
     my_class_color = (49, 139, 153)  # based on string MyNew
     assert pc.color.to_rgb() == my_class_color
@@ -81,6 +88,7 @@ def test_pathclass_colors():
 
 
 def test_pathclass_none_colors():
+    from paquo.classes import QuPathPathClass
     pc = QuPathPathClass("MyNew")
     pc.color = None
     assert pc.color is None
