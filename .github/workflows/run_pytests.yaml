@@ -11,7 +11,7 @@ jobs:
       max-parallel: 1
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        os: [windows-2016]
         python-version: [3.8]
     steps:
     - uses: actions/checkout@v1
