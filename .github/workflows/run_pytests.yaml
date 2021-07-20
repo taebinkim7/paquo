@@ -43,14 +43,14 @@ jobs:
         use-only-tar-bz2: true
         auto-activate-base: false
     - name: Test with pytest (windows)
-      if: matrix.platform == 'windows-latest'
+      if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
         conda info
         conda list
         PYTEST_DEBUG=1 pytest
     - name: Test with pytest (unix)
-      if: matrix.platform != 'windows-latest'
+      if: matrix.os != 'windows-latest'
       shell: bash -l {0}
       run: |
         conda info
