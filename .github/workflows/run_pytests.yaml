@@ -11,7 +11,7 @@ jobs:
       max-parallel: 1
       fail-fast: false
       matrix:
-        os: [windows-2016]
+        os: [windows-latest]
         python-version: [3.8]
     steps:
     - uses: actions/checkout@v1
@@ -42,8 +42,16 @@ jobs:
         activate-environment: paquo
         use-only-tar-bz2: true
         auto-activate-base: false
-    - shell: bash -l {0}
-      name: Test with pytest
+    - name: Test with pytest (windows)
+      if: matrix.platform == 'windows-latest'
+      shell: powershell
+      run: |
+        conda info
+        conda list
+        PYTEST_DEBUG=1 pytest
+    - name: Test with pytest (unix)
+      if: matrix.platform != 'windows-latest'
+      shell: bash -l {0}
       run: |
         conda info
         conda list
