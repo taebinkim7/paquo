@@ -49,6 +49,7 @@ jobs:
         conda list
         PYTEST_DEBUG=1 pytest
     - shell: bash -l {0}
+      if: ${{ failure() }}
       name: show java error log
       run: |
         echo "########### ERROR LOG ##############"
