@@ -48,7 +48,7 @@ jobs:
       run: |
         conda info
         conda list
-        PYTEST_DEBUG=1 pytest
+        pytest --debug
     - name: Test with pytest (unix)
       if: matrix.os != 'windows-latest'
       shell: bash -l {0}
