@@ -48,7 +48,7 @@ jobs:
       run: |
         conda info
         conda list
-        python -c "from paquo._config import settings, to_kwargs; from paquo.jpype_backend import find_qupath; appdir, rundir, _, _ = find_qupath(**to_kwargs(settings)); import shutil; shutil.copy(rundir / 'lib' / 'zip.dll', appdir.parent)"
+        python -c "from paquo._config import settings, to_kwargs; from paquo.jpype_backend import find_qupath; appdir, rundir, _, _ = find_qupath(**to_kwargs(settings)); import shutil; shutil.copy(rundir / 'bin' / 'zip.dll', appdir.parent)"
         pytest --debug
     - name: Test with pytest (unix)
       if: matrix.os != 'windows-latest'
