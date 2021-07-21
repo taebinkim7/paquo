@@ -129,6 +129,7 @@ def qupath_jvm_info_from_qupath_dir(qupath_dir: Path, jvm_options: List[str]) ->
     # Add java.library.path so that the qupath provided openslide works
     jvm_options.append(f"-Djava.library.path={app_dir}")
     if system == "Windows":
+        jvm_options.append("-Dqupath.config=console")
         jvm_options.append("--illegal-access=permit")
     jvm_options = list(dict.fromkeys(jvm_options))  # keep options unique and in order
 
